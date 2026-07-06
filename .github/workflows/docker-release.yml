@@ -2,8 +2,8 @@ name: Docker Release
 
 on:
   push:
-    tags:
-      - "v*.*.*-plane-ampas.*"
+    branches:
+      - ampas
 
 env:
   REGISTRY: docker.io
@@ -46,9 +46,12 @@ jobs:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-      - name: Extract version from tag
+      - name: Compute version tag
         id: version
-        run: echo "VERSION=${GITHUB_REF_NAME#v}" >> "$GITHUB_OUTPUT"
+        run: |
+          VERSION=$(jq -r '.version' package.json)
+          DATE=$(date +%Y%m%d)
+          echo "TAG=${VERSION}-plane-ampas-${DATE}" >> "$GITHUB_OUTPUT"
 
       - name: Build and push
         uses: docker/build-push-action@v6
@@ -57,7 +60,7 @@ jobs:
           file: ${{ matrix.image.file }}
           push: true
           tags: |
-            ${{ env.REGISTRY }}/${{ env.IMAGE_OWNER }}/plane-${{ matrix.image.name }}:${{ steps.version.outputs.VERSION }}
+            ${{ env.REGISTRY }}/${{ env.IMAGE_OWNER }}/plane-${{ matrix.image.name }}:${{ steps.version.outputs.TAG }}
             ${{ env.REGISTRY }}/${{ env.IMAGE_OWNER }}/plane-${{ matrix.image.name }}:latest
           cache-from: type=gha
           cache-to: type=gha,mode=max
