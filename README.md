@@ -1,6 +1,6 @@
 # plane-ampas
 
-Extends [Plane](https://github.com/makeplane/plane). For local development, documentation, community, security, and contributing, see the [upstream README](https://github.com/makeplane/plane?tab=readme-ov-file).
+A fork of [Plane](https://github.com/makeplane/plane) tracking `master` upstream. For local development, documentation, community, security, and contributing, see the [upstream README](https://github.com/makeplane/plane?tab=readme-ov-file).
 
 ## Features
 - Generic OpenID Connect (OIDC) authentication alongside built-in Google/GitHub/GitLab/Gitea providers
