@@ -4,10 +4,7 @@ on:
   push:
     branches:
       - ampas
-
-env:
-  REGISTRY: docker.io
-  IMAGE_OWNER: ${{ secrets.DOCKERHUB_USERNAME }}
+  workflow_dispatch:
 
 jobs:
   build-and-push:
@@ -46,12 +43,18 @@ jobs:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-      - name: Compute version tag
+      - name: Read version
         id: version
-        run: |
-          VERSION=$(jq -r '.version' package.json)
-          DATE=$(date +%Y%m%d)
-          echo "TAG=${VERSION}-plane-ampas-${DATE}" >> "$GITHUB_OUTPUT"
+        run: echo "VERSION=$(jq -r '.version' package.json)" >> "$GITHUB_OUTPUT"
+
+      - name: Docker metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ secrets.DOCKERHUB_USERNAME }}/plane-${{ matrix.image.name }}
+          tags: |
+            type=raw,value=${{ steps.version.outputs.VERSION }}-plane-ampas-{{ date 'YYYYMMDD' }}
+            type=raw,value=latest
 
       - name: Build and push
         uses: docker/build-push-action@v6
@@ -59,8 +62,7 @@ jobs:
           context: ${{ matrix.image.context }}
           file: ${{ matrix.image.file }}
           push: true
-          tags: |
-            ${{ env.REGISTRY }}/${{ env.IMAGE_OWNER }}/plane-${{ matrix.image.name }}:${{ steps.version.outputs.TAG }}
-            ${{ env.REGISTRY }}/${{ env.IMAGE_OWNER }}/plane-${{ matrix.image.name }}:latest
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
