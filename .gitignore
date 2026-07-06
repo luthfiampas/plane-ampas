@@ -113,3 +113,6 @@ scripts/
 
 # Generated i18n keys
 keys.generated.ts
+
+# Sandbox
+sandbox/
